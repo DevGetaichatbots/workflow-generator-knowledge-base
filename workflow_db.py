@@ -566,6 +566,11 @@ class WorkflowDatabase:
 
         # Use FTS search if query provided
         if query.strip():
+            # Format query for OR search if it doesn't already have explicit logic
+            formatted_query = query.strip()
+            if " AND " not in formatted_query and " OR " not in formatted_query:
+                formatted_query = " OR ".join(formatted_query.split())
+                
             # FTS search with ranking
             base_query = """
                 SELECT w.*, rank
@@ -573,7 +578,7 @@ class WorkflowDatabase:
                 JOIN workflows w ON w.id = fts.rowid
                 WHERE workflows_fts MATCH ?
             """
-            params.insert(0, query)
+            params.insert(0, formatted_query)
         else:
             # Regular query without FTS
             base_query = """
